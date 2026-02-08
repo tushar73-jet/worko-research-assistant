@@ -1,5 +1,6 @@
 const express = require('express')
 const { decomposeQuestion } = require("./llm")
+const { searchWeb } = require("./search");
 const router = express.Router()
 
 router.post("/research", async (req, res) => {
@@ -12,9 +13,16 @@ router.post("/research", async (req, res) => {
 
   try{
     const queries = await decomposeQuestion(question)
+
+    const sources = [];
+    for (const q of queries) {
+      const results = await searchWeb(q);
+      sources.push(...results);
+    }
     
     res.json({
-        queries
+        queries,
+        sources
     })
 } catch(error){
     console.error(error);
