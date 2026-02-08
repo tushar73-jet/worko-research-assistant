@@ -1,5 +1,5 @@
 const express = require('express')
-const { decomposeQuestion,synthesizeAnswer } = require("./llm")
+const { decomposeQuestion, synthesizeAnswer } = require("./llm")
 const { searchWeb } = require("./search");
 const router = express.Router()
 
@@ -11,7 +11,7 @@ router.post("/research", async (req, res) => {
   }
 
 
-  try{
+  try {
     const queries = await decomposeQuestion(question)
 
     const sources = [];
@@ -34,15 +34,15 @@ router.post("/research", async (req, res) => {
       question,
       uniqueSources
     );
-    
+
     res.json({
-        answer,
-        citations: uniqueSources
+      answer,
+      citations: uniqueSources
     })
-} catch(error){
+  } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to process question" })
-}
+  }
 });
 
 module.exports = router
