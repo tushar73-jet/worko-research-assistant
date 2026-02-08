@@ -1,5 +1,5 @@
 const express = require('express')
-const { decomposeQuestion } = require("./llm")
+const { decomposeQuestion,synthesizeAnswer } = require("./llm")
 const { searchWeb } = require("./search");
 const router = express.Router()
 
@@ -19,10 +19,25 @@ router.post("/research", async (req, res) => {
       const results = await searchWeb(q);
       sources.push(...results);
     }
+
+    const uniqueSources = [];
+    const seen = new Set();
+
+    for (const src of sources) {
+      if (src.url && !seen.has(src.url)) {
+        seen.add(src.url);
+        uniqueSources.push(src);
+      }
+    }
+
+    const answer = await synthesizeAnswer(
+      question,
+      uniqueSources
+    );
     
     res.json({
-        queries,
-        sources
+        answer,
+        citations: uniqueSources
     })
 } catch(error){
     console.error(error);

@@ -9,7 +9,23 @@ Question:
 {{question}}
 `;
 
+
+const SYNTHESIS_PROMPT = `
+You are a research assistant.
+
+Using ONLY the sources below, answer the user's question.
+Cite sources using [1], [2], etc.
+If the sources are insufficient, say so clearly.
+
+Question:
+{{question}}
+
+Sources:
+{{sources}}
+`;
+
 module.exports = {
-  DECOMPOSE_PROMPT
+  DECOMPOSE_PROMPT,
+  SYNTHESIS_PROMPT
 };
 

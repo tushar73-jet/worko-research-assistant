@@ -1,6 +1,9 @@
 const Groq = require("groq-sdk");
 const { DECOMPOSE_PROMPT } = require("./prompts")
 
+const { SYNTHESIS_PROMPT } = require("./prompts");
+
+
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY
 });
@@ -20,6 +23,29 @@ async function decomposeQuestion(question) {
   return JSON.parse(text)
 }
 
+async function synthesizeAnswer(question, sources) {
+  const formattedSources = sources
+    .slice(0, 5)
+    .map(
+      (s, i) =>
+        `[${i + 1}] ${s.title}\n${s.snippet}\n${s.url}`
+    )
+    .join("\n\n");
+
+  const prompt = SYNTHESIS_PROMPT
+    .replace("{{question}}", question)
+    .replace("{{sources}}", formattedSources);
+
+  const completion = await groq.chat.completions.create({
+    model: "llama-3.1-8b-instant",
+    messages: [{ role: "user", content: prompt }],
+    temperature: 0.2
+  });
+
+  return completion.choices[0].message.content;
+}
+
 module.exports = {
-  decomposeQuestion
+  decomposeQuestion,
+  synthesizeAnswer
 };
