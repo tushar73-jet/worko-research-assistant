@@ -22,15 +22,17 @@ router.post("/research", async (req, res) => {
       queries = [question];
     }
 
-    const sources = [];
-    for (const q of queries) {
+    const searchPromises = queries.map(async (q) => {
       try {
-        const results = await searchWeb(q);
-        sources.push(...results);
+        return await searchWeb(q);
       } catch (searchError) {
         console.error(`Search failed for query "${q}":`, searchError);
+        return [];
       }
-    }
+    });
+
+    const searchResults = await Promise.all(searchPromises);
+    const sources = searchResults.flat();
 
     const uniqueSources = [];
     const seen = new Set();

@@ -1,29 +1,5 @@
 const axios = require("axios");
 
-async function searchDuckDuckGo(query) {
-  const response = await axios.get("https://api.duckduckgo.com/", {
-    params: {
-      q: query,
-      format: "json",
-      no_html: 1,
-      skip_disambig: 1
-    }
-  });
-
-  const data = response.data;
-  const results = [];
-
-  if (data.AbstractText) {
-    results.push({
-      title: data.Heading || query,
-      snippet: data.AbstractText,
-      url: data.AbstractURL || ""
-    });
-  }
-
-  return results;
-}
-
 async function searchWikipedia(query) {
   const response = await axios.get(
     "https://en.wikipedia.org/w/api.php",
@@ -54,14 +30,56 @@ async function searchWikipedia(query) {
   return results;
 }
 
-async function searchWeb(query) {
-  let results = await searchDuckDuckGo(query);
+async function searchArXiv(query) {
+  try {
+    const response = await axios.get(
+      "http://export.arxiv.org/api/query",
+      {
+        params: {
+          search_query: `all:${query}`,
+          max_results: 3
+        }
+      }
+    );
 
-  if (results.length === 0) {
-    results = await searchWikipedia(query);
+    const xml = response.data;
+    const results = [];
+
+    const entries = xml.split("<entry>");
+    entries.shift();
+
+    for (const entry of entries) {
+      const titleMatch = entry.match(/<title>([\s\S]*?)<\/title>/);
+      const summaryMatch = entry.match(/<summary>([\s\S]*?)<\/summary>/);
+      const idMatch = entry.match(/<id>([\s\S]*?)<\/id>/);
+
+      if (titleMatch && summaryMatch) {
+        results.push({
+          title: titleMatch[1].trim(),
+          snippet: summaryMatch[1].trim().substring(0, 300) + "...",
+          url: idMatch ? idMatch[1].trim() : ""
+        });
+      }
+    }
+
+    return results;
+  } catch (error) {
+    console.error("ArXiv search failed:", error);
+    return [];
   }
+}
 
-  return results;
+async function searchWeb(query) {
+  // Parallelize sources for speed and diversity.
+  // Using allSettled to ensure one source failing doesn't kill the whole request.
+  const results = await Promise.allSettled([
+    searchWikipedia(query),
+    searchArXiv(query)
+  ]);
+
+  return results
+    .filter(res => res.status === 'fulfilled')
+    .flatMap(res => res.value);
 }
 
 module.exports = {
