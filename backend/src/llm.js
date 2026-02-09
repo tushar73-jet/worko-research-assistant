@@ -19,11 +19,20 @@ async function decomposeQuestion(question) {
     temperature: 0.2
   });
 
-  const text = completion.choices[0].message.content
-  return JSON.parse(text)
+  try {
+    const text = completion.choices[0].message.content
+    return JSON.parse(text)
+  } catch (error) {
+    console.error("Failed to parse decomposition response, falling back to original question:", error);
+    return [question];
+  }
 }
 
 async function synthesizeAnswer(question, sources) {
+  if (!sources || sources.length === 0) {
+    return "I couldn't find any relevant sources to answer that question correctly. Please try rephrasing or asking something else.";
+  }
+
   const formattedSources = sources
     .slice(0, 5)
     .map(
