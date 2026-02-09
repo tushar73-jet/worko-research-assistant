@@ -20,17 +20,15 @@ The LLM (LLaMA 3.x family via Groq) is used for three distinct tasks:
 Groq was chosen for its fast inference speed, low latency, and availability of a free tier suitable for this exercise.
 
 ## Data Sources
-- **Wikipedia** is used as the primary general-knowledge source due to its structured format and high factual reliability.
-- **ArXiv** is used as an additional academic source to provide deeper context for technical or research-oriented questions.
-
-Limiting the number of sources helps reduce noise and keeps the synthesis focused and consistent.
+- **Tavily AI** is used as the primary search engine. It is specifically designed for LLM-based RAG (Retrieval-Augmented Generation) applications, providing pre-cleaned and ranked results from across the web.
+- By moving to Tavily, the system handles general knowledge, academic papers, and latest news through a single, optimized interface, replacing the manual Wikipedia and ArXiv scrapers.
 
 ## Search Strategy & Parallelism
-For each decomposed query, the system searches Wikipedia and ArXiv **in parallel** using `Promise.allSettled`.  
+For each decomposed query, the system queries Tavily via its official SDK.  
 This approach:
-- Reduces overall latency
-- Allows partial failures without breaking the pipeline
-- Ensures that useful results can still be synthesized even if one source fails
+- Simplifies the backend logic by consolidating multiple scrapers into one.
+- Improves result quality through Tavily's AI-powered ranking and snippet extraction.
+- Ensures robustness against rate limits and structured data parsing issues inherent in raw API scraping.
 
 ## Answer Synthesis & Verbosity Control
 The system dynamically adjusts answer length based on question intent:
@@ -45,7 +43,7 @@ This behavior is controlled through LLM-based question classification rather tha
 - Timeouts are applied to external requests to avoid hanging responses.
 
 ## Implementation Tradeoffs
-- ArXiv responses are parsed using lightweight string matching instead of a full XML parser to keep dependencies minimal. This tradeoff is acceptable given the limited response size and controlled scope of this assignment.
+- **One Search Provider**: We replaced multiple free but limited sources (Wikipedia/ArXiv) with one premium service (Tavily). This improves result quality and maintainability at the cost of an external service dependency and API key requirement.
 - No database or caching layer is used to keep the system simple and focused on LLM orchestration rather than persistence.
 
 ## Known Limitations & Future Improvements

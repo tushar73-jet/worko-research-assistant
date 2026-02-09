@@ -4,7 +4,7 @@ A high-performance research assistant that intelligently decomposes complex ques
 
 ## Features
 - **Intelligent Question Decomposition**: Breaks down multifaceted queries into 3-5 precise search vectors using Llama 3.1.
-- **Multi-Source Research**: Aggregate information from **Wikipedia** and **ArXiv** (for academic papers) in parallel.
+- **Tavily AI Search**: Leverages Tavily for high-quality, LLM-optimized web search results across the entire internet.
 - **Adaptive Synthesis**: Generates responses with dynamic length:
   - **Factual queries**: Concise, one-line answers.
   - **Descriptive/Complex queries**: Detailed, ~5-line explanations.
@@ -18,7 +18,7 @@ A high-performance research assistant that intelligently decomposes complex ques
 - **Frontend**: React 19 (Vite)
 - **Backend**: Node.js (Express 5)
 - **LLM**: Groq SDK (Llama 3.1 8B Instant)
-- **Search Logic**: Axios-based integration with Wikipedia and ArXiv APIs.
+- **Search Logic**: Tavily AI (@tavily/core) for optimized web retrieval.
 
 ## Architecture
 The system employs a sequential pipeline with parallelized search execution:
@@ -27,10 +27,8 @@ The system employs a sequential pipeline with parallelized search execution:
 graph TD
     A[User Question] --> B[LLM Decomposer]
     B --> C{Search Queries}
-    C -->|Parallel| D1[Wikipedia Searcher]
-    C -->|Parallel| D2[ArXiv Searcher]
-    D1 --> E[Results Aggregator]
-    D2 --> E
+    C -->|Parallel| D[Tavily Search Engine]
+    D --> E[Results Aggregator]
     E --> F[LLM Synthesizer]
     F --> G[Grounded Answer w/ Citations]
 ```
@@ -49,7 +47,7 @@ graph TD
 2. Configure environment:
    ```bash
    cp .env.example .env
-   # Add your GROQ_API_KEY to .env
+   # Add your GROQ_API_KEY and TAVILY_API_KEY to .env
    ```
 3. Run in development:
    ```bash
