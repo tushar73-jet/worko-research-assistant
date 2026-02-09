@@ -17,11 +17,11 @@ function App() {
 
     try {
       const response = await fetch("https://worko-research-assistant.onrender.com/research",
- {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question })
-      });
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question })
+        });
 
       const data = await response.json();
 
@@ -41,15 +41,15 @@ function App() {
   return (
 
 
-    
+
     <div style={{ maxWidth: "800px", margin: "40px auto", fontFamily: "Arial" }}>
 
-      <p style={{ background:"#fff3cd", padding:"10px", borderRadius:"6px" }}>
-      ⚠️ Note: Backend runs on Render (free tier). The first request may take up to 1 minute due to cold start.
+      <p style={{ background: "#fff3cd", padding: "10px", borderRadius: "6px" }}>
+        ⚠️ Note: Backend runs on Render (free tier). The first request may take up to 1 minute due to cold start.
       </p>
       <h2>Research Assistant</h2>
 
-      
+
 
       <textarea
         rows="4"
