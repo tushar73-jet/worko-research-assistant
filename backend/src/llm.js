@@ -20,7 +20,13 @@ async function decomposeQuestion(question) {
   });
 
   try {
-    const text = completion.choices[0].message.content
+    let text = completion.choices[0].message.content
+
+    const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    if (jsonMatch) {
+      text = jsonMatch[1];
+    }
+
     return JSON.parse(text)
   } catch (error) {
     console.error("Failed to parse decomposition response, falling back to original question:", error);
