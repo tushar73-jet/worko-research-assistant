@@ -1,75 +1,73 @@
 # Worko Research Assistant
 
-A simple research assistant that answers questions using web search and LLM synthesis. This project was built as part of the Worko technical exercise.
+A high-performance research assistant that intelligently decomposes complex questions, gathers evidence from academic and factual sources, and synthesizes grounded answers using state-of-the-art LLMs.
 
 ## Features
-- **Question Decomposition**: Breaks down complex user questions into multiple precise search queries.
-- **Web Research**: Gathers information from DuckDuckGo and Wikipedia.
-- **LLM Synthesis**: Synthesizes findings into a coherent answer using the Groq (Llama-3.1-8b) model.
-- **Automated Citations**: Provides links to the sources used in the answer.
-- **Error Handling**: Gracefully handles API errors and insufficient information.
+- **Intelligent Question Decomposition**: Breaks down multifaceted queries into 3-5 precise search vectors using Llama 3.1.
+- **Multi-Source Research**: Aggregate information from **Wikipedia** and **ArXiv** (for academic papers) in parallel.
+- **Adaptive Synthesis**: Generates responses with dynamic length:
+  - **Factual queries**: Concise, one-line answers.
+  - **Descriptive/Complex queries**: Detailed, ~5-line explanations.
+- **Grounding & Citations**: Every answer is strictly grounded in retrieved sources with automated citations and source links.
+- **Robustness**:
+  - **Question Validation**: Enforces length constraints (5-500 characters) and input sanitization.
+  - **Error Handling**: Gracefully handles search failures using `Promise.allSettled`.
+  - **Rate Limiting**: Backend protection against abuse.
 
 ## Tech Stack
-- **Frontend**: React (Vite)
-- **Backend**: Node.js (Express)
-- **LLM**: Groq SDK (Llama 3.1 8B)
-- **Search**: DuckDuckGo API (JSON) & Wikipedia API
+- **Frontend**: React 19 (Vite)
+- **Backend**: Node.js (Express 5)
+- **LLM**: Groq SDK (Llama 3.1 8B Instant)
+- **Search Logic**: Axios-based integration with Wikipedia and ArXiv APIs.
 
 ## Architecture
-The system follows a sequential pipeline to ensure high-quality, grounded answers:
+The system employs a sequential pipeline with parallelized search execution:
 
 ```mermaid
 graph TD
     A[User Question] --> B[LLM Decomposer]
-    B --> C[Search Queries]
-    C --> D[Web Searchers DuckDuckGo/Wiki]
-    D --> E[Results Aggregator & Deduplicator]
+    B --> C{Search Queries}
+    C -->|Parallel| D1[Wikipedia Searcher]
+    C -->|Parallel| D2[ArXiv Searcher]
+    D1 --> E[Results Aggregator]
+    D2 --> E
     E --> F[LLM Synthesizer]
-    F --> G[Cited Answer]
+    F --> G[Grounded Answer w/ Citations]
 ```
 
 ## Setup Instructions
 
 ### Prerequisites
 - Node.js (v18+)
-- A Groq API Key (get it at [console.groq.com](https://console.groq.com/))
+- A Groq API Key ([console.groq.com](https://console.groq.com/))
 
 ### Backend Setup
-1. Navigate to the `backend` directory:
+1. Navigate to `backend/` and install dependencies:
    ```bash
-   cd backend
+   cd backend && npm install
    ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Create a `.env` file from the template:
+2. Configure environment:
    ```bash
    cp .env.example .env
+   # Add your GROQ_API_KEY to .env
    ```
-4. Add your `GROQ_API_KEY` to the `.env` file.
-5. Start the development server:
+3. Run in development:
    ```bash
    npm run dev
    ```
 
 ### Frontend Setup
-1. Navigate to the `frontend` directory:
+1. Navigate to `frontend/` and install dependencies:
    ```bash
-   cd frontend
+   cd frontend && npm install
    ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the development server:
+2. Start development server:
    ```bash
    npm run dev
    ```
-4. Open the application at [http://localhost:5173](http://localhost:5173).
+3. The app defaults to [http://localhost:5173](http://localhost:5173).
 
-## Design Decisions
-- **LLM Selection**: Chose `llama-3.1-8b-instant` via Groq for high-speed inference and excellent instruction following.
-- **Search Strategy**: Used DuckDuckGo as the primary source for broad web coverage, with Wikipedia as a fallback for factual/encyclopedic queries.
-- **Minimalist UI**: Focused on a clean, functional interface that highlights the research flow and sources.
-- **Safety**: Prompt engineering ensures the assistant only uses provided sources and admits if information is lacking.
+## Deployment Notes
+- **Infrastructure**: Optimized for deployment on Render (Backend) and Vercel/Netlify (Frontend).
+- **Cold Starts**: On free tiers (like Render), the initial request may take ~50s to spin up the instance.
+- **API Limits**: Rate limiting is implemented on the backend to prevent API key exhaustion.
