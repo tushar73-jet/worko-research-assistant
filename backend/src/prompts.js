@@ -7,22 +7,27 @@ Do not add any extra text.
 
 Question:
 {{question}}
-`;
+`
 
 
 const SYNTHESIS_PROMPT = `
-You are a research assistant.
+You are a helpful research assistant.
 
-Using ONLY the sources below, answer the user's question.
-Cite sources using [1], [2], etc.
-If the sources are insufficient, say so clearly.
+Answer the question clearly and directly in plain language.
+
+Rules:
+- If the answer is a well-known factual value, answer it normally.
+- Use the sources to SUPPORT the answer, not to block it.
+- Do NOT explain why information is missing unless the question explicitly asks for limitations.
+- Do NOT use phrases like "unfortunately" or "the sources do not contain".
+- Keep the answer short and user-friendly.
 
 Question:
 {{question}}
 
 Sources:
 {{sources}}
-`;
+`
 
 module.exports = {
   DECOMPOSE_PROMPT,
